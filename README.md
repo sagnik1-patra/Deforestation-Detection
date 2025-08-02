@@ -1,9 +1,12 @@
  Low-Density Forest Detection using Satellite Imagery
 Western Ghats – 2023 | Real-Time Analysis with Multiscale CNN + AIS + CSA
 
-
  Objective
-To automatically detect low-density forest areas from satellite images using a hybrid deep learning model: Multiscale CNN + Artificial Immune System (AIS) + Crow Search Algorithm (CSA), applied on .tif satellite images.
+Automatically detect low-density forest areas from satellite images using a hybrid deep learning model:
+Multiscale CNN + Artificial Immune System (AIS) + Crow Search Algorithm (CSA), applied on .tif satellite data.
+
+ ##  Visualization Result  
+![Detected Low-Density Forests](Screenshot%202025-08-02%20120142.png)
 
  Data Source
 Satellite Image: Western_Ghats_Forest_2023.tif
@@ -12,11 +15,9 @@ Source: Exported from Google Earth Engine
 
 Resolution: 10m (Sentinel-2)
 
-🛠 Pipeline Overview
-1. Satellite Image Download (from GEE)
-Use the following GEE code to export a .tif of the forest:
-
-js
+ Pipeline Overview
+ Satellite Image Download (from GEE)
+javascript
 Copy
 Edit
 var region = ee.Geometry.Rectangle([74.5, 10.0, 76.5, 12.5]);  // Western Ghats
@@ -36,7 +37,7 @@ Export.image.toDrive({
   region: region,
   fileFormat: 'GeoTIFF'
 });
-2. NDVI Calculation & CSV Conversion
+ NDVI Calculation & CSV Conversion
 python
 Copy
 Edit
@@ -68,12 +69,13 @@ for r, c in zip(rows, cols):
 
 df = pd.DataFrame(data)
 df.to_csv("forest_ndvi.csv", index=False)
-3. Heatmap Visualization
+ Heatmap Visualization
 python
 Copy
 Edit
 import seaborn as sns
 import matplotlib.pyplot as plt
+import pandas as pd
 
 df = pd.read_csv("forest_ndvi.csv")
 plt.figure(figsize=(10, 8))
@@ -89,23 +91,22 @@ plt.title("Low-Density Forest Heatmap (NDVI)")
 plt.xlabel("Longitude")
 plt.ylabel("Latitude")
 plt.show()
-4. Low Density Forest Detection using CNN + AIS + CSA
+📸 Sample Heatmap Screenshot:
+
+ Low-Density Detection via Clustering
 python
 Copy
 Edit
-# This block is simplified for README; full code includes patching, training loop, and prediction
-
 from sklearn.cluster import DBSCAN
+import pandas as pd
 
-# Assume df with lat/lon/ndvi loaded
-sparse_df = df[df["ndvi"] < 0.3]  # threshold for sparse areas
+df = pd.read_csv("forest_ndvi.csv")
+sparse_df = df[df["ndvi"] < 0.3]  # Threshold for sparse areas
 
 coords = sparse_df[["longitude", "latitude"]].to_numpy()
 clustering = DBSCAN(eps=0.002, min_samples=10).fit(coords)
-
 sparse_df["cluster"] = clustering.labels_
 
-# Show detected zones
 clusters = sparse_df["cluster"].unique()
 for cluster_id in clusters:
     if cluster_id == -1: continue
@@ -113,12 +114,14 @@ for cluster_id in clusters:
     lon = cluster_points["longitude"].mean()
     lat = cluster_points["latitude"].mean()
     print(f"Low-Density Forest Detected at: (Lon: {lon:.5f}, Lat: {lat:.5f})")
-5. AIS + CSA + Multiscale CNN
-AIS: Immune-inspired model selects optimal NDVI patches.
+ AIS + CSA + Multiscale CNN (Concept)
+AIS: Selects optimal NDVI patches simulating immune memory.
 
-CSA: Swarm search over spatially filtered forest zones.
+CSA: Crow-inspired swarm optimization refines detection.
 
-Multiscale CNN: Detects tree density features at various resolutions (not included fully here).
+Multiscale CNN: Extracts forest density patterns at varying spatial scales.
+
+ Full model available in low_density_detector.py with patching, training, and evaluation.
 
  Requirements
 bash
@@ -129,6 +132,7 @@ pip install rasterio numpy pandas seaborn matplotlib scikit-learn
 yaml
 Copy
 Edit
+ Deforestation Detection/
 ├── forest_ndvi.csv
 ├── Western_Ghats_Forest_2023.tif
 ├── Screenshot 2025-08-02 120142.png
@@ -145,8 +149,8 @@ Location #	Longitude	Latitude
 5	75.89489	11.00001
 
  Future Work
-Integrate seasonal NDVI differences for trend analysis
+Integrate seasonal NDVI differences for year-round analysis
 
-Add LSTM or Transformer layer for time-series NDVI change prediction
+Add LSTM or Transformer models for temporal NDVI forecasting
 
-Extend model to flood or drought detection
+Extend model to detect flood-impacted or drought regions
